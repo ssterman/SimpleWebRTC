@@ -14,6 +14,14 @@
                 display: inline-block;
                 padding-left: 40px;
             }
+
+            #canvas {
+                 position: relative;
+                width: 400px;
+                height: 300px;
+                display: inline-block;
+                border: 10px solid #333333;
+            }
             .videoContainer video {
                 width: 100%;
                 height: 100%;
@@ -51,7 +59,7 @@
             <input id="sessionInput"/>
             <button type="submit">Create it!</button>
         </form>
-        <canvas id="canvas" width="400" height="400" style="border: 1px solid black;"></canvas>
+        <canvas id="canvas"></canvas>
         <div class="videoContainer">
             <div>You</div>
             <video id="localVideo"  oncontextmenu="return false;"></video>
@@ -64,6 +72,106 @@
         <script src="socket.io.js"></script>
         <script src="simplewebrtc.bundle.js"></script>
         <script>
+
+        var canvas = document.getElementById('canvas');
+        var ctx = canvas.getContext('2d');
+        var canvasPos = canvas.getBoundingClientRect();
+
+        var dragging = false;
+
+        //drawImage();
+
+        $(canvas).mousedown(mouseDown);
+        $(canvas).mouseup(mouseUp);
+        $(canvas).mousemove(mouseMove);
+
+        var paths = [];
+        var globImg = null;
+        var currVideo = null;
+        setInterval(refresh, 1000/60);
+
+function mouseDown(e) {
+    var pos = getCursorPosition(e);
+                
+    dragging = true;
+    paths.push([pos]); // Add new path, the first point is current pos.
+}
+            
+function mouseUp(e) {
+    dragging = false;
+}
+
+function updateVid(e) {
+      if(currVideo) {
+        console.log("UPDATE");
+        ctx.drawImage(currVideo, 0, 0);
+    }
+}
+
+function mouseMove(e) {
+    var pos, i;
+
+    if (!dragging) {
+        return;
+    }
+    
+    pos = getCursorPosition(e);
+    paths[paths.length-1].push(pos); // Append point tu current path.
+    
+    refresh();
+}
+
+
+function refresh() {
+    //console.log("refresh");
+    // clear canvas
+
+    ctx.clearRect(0, 0, ctx.width, ctx.height);
+    
+    if(currVideo) {
+        console.log("OK");
+        ctx.drawImage(currVideo, 0, 0, 300, 150);
+    }
+
+    for (var i=0; i<paths.length; ++i) {
+        var path = paths[i];
+        
+        if (path.length<1)
+            continue;
+        
+        ctx.strokeStyle = 'rgba(0, 100, 0, 0.25)';
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
+        ctx.lineWidth = 15;
+        ctx.beginPath();
+        ctx.moveTo(path[0].x, path[0].y);
+        
+        for (var j=1; j<path.length; ++j)
+            ctx.lineTo(path[j].x, path[j].y);
+        
+        ctx.stroke();
+        
+    }
+}
+
+
+function getCursorPosition(e) {
+    return {
+        x: e.clientX - canvasPos.left,
+        y: e.clientY - canvasPos.top
+    };
+}
+
+        // function drawImage() {
+        //     var img = new Image();
+        //     img.src = '';
+            
+        //     img.onload = function () {
+        //         globImg = img;
+        //         refresh();
+        //     };
+        // }
+
             // grab the room from the URL
             var room = location.search && location.search.split('?')[1];
 
@@ -108,7 +216,9 @@
                     var d = document.createElement('div');
                     d.className = 'videoContainer';
                     d.id = 'container_' + webrtc.getDomId(peer);
-                    d.appendChild(video);
+                    //d.appendChild(video);
+                    currVideo = video;
+
                     var vol = document.createElement('div');
                     vol.id = 'volume_' + peer.id;
                     vol.className = 'volume_bar';
@@ -186,92 +296,11 @@
                     
                 }
             });
-        </script>
-        <script>
-            // SCRIPT FOR CANVAS DRAWING
-            var canvas = document.getElementById('canvas');
-var ctx = canvas.getContext('2d');
-var canvasPos = canvas.getBoundingClientRect();
 
-var dragging = false;
 
-drawImage();
 
-$(canvas).mousedown(mouseDown);
-$(canvas).mouseup(mouseUp);
-$(canvas).mousemove(mouseMove);
-
-var paths = [];
-var globImg = null;
-
-function drawImage() {
-    var img = new Image();
-    img.src = '';
-    
-    img.onload = function () {
-        globImg = img;
-        refresh();
-    };
-}
-
-function mouseDown(e) {
-    var pos = getCursorPosition(e);
-                
-    dragging = true;
-    paths.push([pos]); // Add new path, the first point is current pos.
-}
-            
-function mouseUp(e) {
-    dragging = false;
-}
-
-function mouseMove(e) {
-    var pos, i;
-
-    if (!dragging) {
-        return;
-    }
-    
-    pos = getCursorPosition(e);
-    paths[paths.length-1].push(pos); // Append point tu current path.
-    
-    refresh();
-}
-
-function refresh() {
-    // clear canvas
-    ctx.clearRect(0, 0, ctx.width, ctx.height);
-    if (globImg)
-        ctx.drawImage(globImg, 0, 0);
-    
-    for (var i=0; i<paths.length; ++i) {
-        var path = paths[i];
-        
-        if (path.length<1)
-            continue;
-        
-        ctx.strokeStyle = 'rgba(0, 100, 0, 0.25)';
-        ctx.lineCap = 'round';
-        ctx.lineJoin = 'round';
-        ctx.lineWidth = 15;
-        ctx.beginPath();
-        ctx.moveTo(path[0].x, path[0].y);
-        
-        for (var j=1; j<path.length; ++j)
-            ctx.lineTo(path[j].x, path[j].y);
-        
-        ctx.stroke();
-        
-    }
-}
-
-function getCursorPosition(e) {
-    return {
-        x: e.clientX - canvasPos.left,
-        y: e.clientY - canvasPos.top
-    };
-}
 
         </script>
+     
     </body>
 </html>
