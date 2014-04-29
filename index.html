@@ -6,15 +6,18 @@
     <body>
         <h1 id="title">Start a room</h1>
         <style>
+
             .videoContainer {
                 position: relative;
-                width: 200px;
-                height: 150px;
+                width: 400px;
+                height: 300px;
+                display: inline-block;
+                padding-left: 40px;
             }
             .videoContainer video {
-                position: absolute;
                 width: 100%;
                 height: 100%;
+                border: 10px solid #333333;
             }
             .volume_bar {
                 position: absolute;
@@ -24,6 +27,23 @@
                 bottom: 0px;
                 background-color: #12acef;
             }
+
+            #remotes {
+                display: inline-block;
+            }
+
+            #instructions {
+                padding-left: 40px;
+                width: 400px;
+            }
+
+            .active {
+                width: 900px;
+                padding: 0;
+                margin-left:auto;
+                margin-right:auto;
+                backgroud-color: #eeeeee;
+            }
         </style>
         <button id="screenShareButton"></button>
         <p id="subTitle"></p>
@@ -32,10 +52,13 @@
             <button type="submit">Create it!</button>
         </form>
         <div class="videoContainer">
-            <video id="localVideo" style="height: 150px;" oncontextmenu="return false;"></video>
+            <div>You</div>
+            <video id="localVideo"  oncontextmenu="return false;"></video>
             <div id="localVolume" class="volume_bar"></div>
         </div>
-        <div id="remotes"></div>
+        <div id="remotes">
+        <div id="instructions">Drag your mouse anywhere over your partner to "touch" them with a warm glow.</div>
+        </div>
         <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.0/jquery.min.js"></script>
         <script src="socket.io.js"></script>
         <script src="simplewebrtc.bundle.js"></script>
@@ -88,10 +111,10 @@
                     var vol = document.createElement('div');
                     vol.id = 'volume_' + peer.id;
                     vol.className = 'volume_bar';
-                    video.onclick = function () {
-                        video.style.width = video.videoWidth + 'px';
-                        video.style.height = video.videoHeight + 'px';
-                    };
+                    // video.onclick = function () {
+                    //     video.style.width = video.videoWidth + 'px';
+                    //     video.style.height = video.videoHeight + 'px';
+                    // };
                     d.appendChild(vol);
                     remotes.appendChild(d);
                 }
