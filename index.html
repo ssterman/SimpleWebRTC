@@ -51,6 +51,7 @@
             <input id="sessionInput"/>
             <button type="submit">Create it!</button>
         </form>
+        <canvas id="canvas" width="400" height="400" style="border: 1px solid black;"></canvas>
         <div class="videoContainer">
             <div>You</div>
             <video id="localVideo"  oncontextmenu="return false;"></video>
@@ -185,6 +186,92 @@
                     
                 }
             });
+        </script>
+        <script>
+            // SCRIPT FOR CANVAS DRAWING
+            var canvas = document.getElementById('canvas');
+var ctx = canvas.getContext('2d');
+var canvasPos = canvas.getBoundingClientRect();
+
+var dragging = false;
+
+drawImage();
+
+$(canvas).mousedown(mouseDown);
+$(canvas).mouseup(mouseUp);
+$(canvas).mousemove(mouseMove);
+
+var paths = [];
+var globImg = null;
+
+function drawImage() {
+    var img = new Image();
+    img.src = '';
+    
+    img.onload = function () {
+        globImg = img;
+        refresh();
+    };
+}
+
+function mouseDown(e) {
+    var pos = getCursorPosition(e);
+                
+    dragging = true;
+    paths.push([pos]); // Add new path, the first point is current pos.
+}
+            
+function mouseUp(e) {
+    dragging = false;
+}
+
+function mouseMove(e) {
+    var pos, i;
+
+    if (!dragging) {
+        return;
+    }
+    
+    pos = getCursorPosition(e);
+    paths[paths.length-1].push(pos); // Append point tu current path.
+    
+    refresh();
+}
+
+function refresh() {
+    // clear canvas
+    ctx.clearRect(0, 0, ctx.width, ctx.height);
+    if (globImg)
+        ctx.drawImage(globImg, 0, 0);
+    
+    for (var i=0; i<paths.length; ++i) {
+        var path = paths[i];
+        
+        if (path.length<1)
+            continue;
+        
+        ctx.strokeStyle = 'rgba(0, 100, 0, 0.25)';
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
+        ctx.lineWidth = 15;
+        ctx.beginPath();
+        ctx.moveTo(path[0].x, path[0].y);
+        
+        for (var j=1; j<path.length; ++j)
+            ctx.lineTo(path[j].x, path[j].y);
+        
+        ctx.stroke();
+        
+    }
+}
+
+function getCursorPosition(e) {
+    return {
+        x: e.clientX - canvasPos.left,
+        y: e.clientY - canvasPos.top
+    };
+}
+
         </script>
     </body>
 </html>
