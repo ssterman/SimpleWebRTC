@@ -11,11 +11,11 @@
                 position: relative;
                 width: 400px;
                 height: 300px;
-                display: inline-block;
+                display: none;
                 padding-left: 40px;
             }
 
-            #canvas {
+            #canvas, #canvas2 {
                  position: relative;
                 width: 400px;
                 height: 300px;
@@ -60,11 +60,14 @@
             <button type="submit">Create it!</button>
         </form>
         <canvas id="canvas"></canvas>
+        <canvas id="canvas2"></canvas>
         <div class="videoContainer">
             <div>You</div>
+
             <video id="localVideo"  oncontextmenu="return false;"></video>
             <div id="localVolume" class="volume_bar"></div>
         </div>
+  
         <div id="remotes">
         <div id="instructions">Drag your mouse anywhere over your partner to "touch" them with a warm glow.</div>
         </div>
@@ -74,12 +77,23 @@
         <script>
 
         var canvas = document.getElementById('canvas');
+        var localCanvas = document.getElementById('canvas2');
         var ctx = canvas.getContext('2d');
+        var localCtx = localCanvas.getContext('2d');
+
         var canvasPos = canvas.getBoundingClientRect();
+        var localCanvasPos = localCanvas.getBoundingClientRect();
+        var localVideo = document.getElementById('localVideo');
+         localCtx.drawImage(localVideo, 0, 0, 300, 150);
+          // translate context to center of canvas
+          localCtx.translate(300, 0);
+
+          // flip context horizontally
+          localCtx.scale(-1, 1);
+
 
         var dragging = false;
 
-        //drawImage();
 
         $(canvas).mousedown(mouseDown);
         $(canvas).mouseup(mouseUp);
@@ -92,6 +106,7 @@
 
 function mouseDown(e) {
     var pos = getCursorPosition(e);
+    console.log(pos);
                 
     dragging = true;
     paths.push([pos]); // Add new path, the first point is current pos.
@@ -122,15 +137,23 @@ function mouseMove(e) {
 }
 
 
+
 function refresh() {
     //console.log("refresh");
     // clear canvas
 
     ctx.clearRect(0, 0, ctx.width, ctx.height);
+    localCtx.clearRect(0, 0, ctx.width, ctx.height);
     
     if(currVideo) {
         console.log("OK");
         ctx.drawImage(currVideo, 0, 0, 300, 150);
+    }
+
+    if(localVideo) {
+        console.log("localVideo");
+        localCtx.drawImage(localVideo, 0, 0, 300, 150);
+
     }
 
     for (var i=0; i<paths.length; ++i) {
@@ -139,7 +162,7 @@ function refresh() {
         if (path.length<1)
             continue;
         
-        ctx.strokeStyle = 'rgba(0, 100, 0, 0.25)';
+        ctx.strokeStyle = 'rgba(255, 0, 0, 0.20)';
         ctx.lineCap = 'round';
         ctx.lineJoin = 'round';
         ctx.lineWidth = 15;
@@ -157,8 +180,8 @@ function refresh() {
 
 function getCursorPosition(e) {
     return {
-        x: e.clientX - canvasPos.left,
-        y: e.clientY - canvasPos.top
+        x: e.pageX - $('#canvas').offset().left, //e.clientX - canvasPos.left,
+        y: e.pageY - $('#canvas').offset().top //e.clientY - canvasPos.top 
     };
 }
 
